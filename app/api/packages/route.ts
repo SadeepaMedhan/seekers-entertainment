@@ -1,71 +1,57 @@
 import { type NextRequest, NextResponse } from "next/server"
-
-// Mock data - replace with actual database
-const packages = [
-  {
-    id: "1",
-    title: "Basic Package",
-    description: "Perfect for small gatherings and intimate celebrations",
-    price: 15000,
-    features: [
-      "Professional DJ for 4 hours",
-      "Basic sound system",
-      "LED uplighting",
-      "Wireless microphone",
-      "Music requests handling",
-    ],
-    image: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: "2",
-    title: "Premium Package",
-    description: "Ideal for weddings and corporate events",
-    price: 35000,
-    features: [
-      "Professional DJ for 6 hours",
-      "Premium sound system",
-      "Advanced lighting setup",
-      "2 wireless microphones",
-      "LED screen display",
-      "Photography (2 hours)",
-      "Custom playlist creation",
-    ],
-    popular: true,
-    image: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: "3",
-    title: "Luxury Package",
-    description: "Complete event solution for grand celebrations",
-    price: 75000,
-    features: [
-      "Professional DJ for 8 hours",
-      "Premium sound & lighting",
-      "LED screens & displays",
-      "Live streaming setup",
-      "Photography & videography",
-      "Event decoration",
-      "Drone coverage",
-      "Same-day video editing",
-    ],
-    image: "/placeholder.svg?height=300&width=400",
-  },
-]
+import connectDB from "@/lib/mongodb"
+import Package from "@/models/Package"
 
 export async function GET() {
-  return NextResponse.json(packages)
+  try {
+    await connectDB()
+    
+    const packages = await Package.find({ active: true })
+      .sort({ popular: -1, createdAt: -1 })
+      .lean()
+    
+    // Convert MongoDB _id to id for frontend compatibility
+    const formattedPackages = packages.map((pkg: any) => ({
+      ...pkg,
+      id: pkg._id.toString(),
+      _id: undefined
+    }))
+    
+    return NextResponse.json(formattedPackages)
+  } catch (error) {
+    console.error("Error fetching packages:", error)
+    return NextResponse.json({ error: "Failed to fetch packages" }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
+    
     const body = await request.json()
-    const newPackage = {
-      id: Date.now().toString(),
-      ...body,
+    
+    const newPackage = new Package({
+      title: body.title,
+      description: body.description,
+      price: body.price,
+      features: body.features,
+      image: body.image || '/placeholder.svg?height=300&width=400',
+      popular: body.popular || false,
+      active: body.active !== undefined ? body.active : true,
+    })
+    
+    const savedPackage = await newPackage.save()
+    
+    // Format response
+    const responsePackage = {
+      ...savedPackage.toObject(),
+      id: savedPackage._id.toString(),
+      _id: undefined
     }
-    packages.push(newPackage)
-    return NextResponse.json(newPackage, { status: 201 })
+    
+    return NextResponse.json(responsePackage, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 })
+    console.error("Error creating package:", error)
+    return NextResponse.json({ error: "Failed to create package" }, { status: 500 })
   }
 }

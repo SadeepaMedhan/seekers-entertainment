@@ -1,20 +1,22 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { useAuth } from "@/components/auth-provider"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { LogOut, Package, ImageIcon, MessageSquare, Plus, Edit, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '@/components/auth-provider'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { PackageManagement } from '@/components/admin/package-management'
+import { InquiryManagement } from '@/components/admin/inquiry-management'
+import { MediaManagement } from '@/components/admin/media-management'
+import { BackgroundManagement } from '@/components/admin/background-management'
+import { LogOut, Users, Package, MessageSquare, Image, Video, TrendingUp, Calendar, Star, Settings } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const { toast } = useToast()
@@ -26,9 +28,9 @@ function LoginForm() {
     const success = await login(email, password)
     if (!success) {
       toast({
-        title: "Login failed",
-        description: "Invalid email or password",
-        variant: "destructive",
+        title: 'Login failed',
+        description: 'Invalid email or password',
+        variant: 'destructive',
       })
     }
     setLoading(false)
@@ -52,7 +54,6 @@ function LoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@seekersentertainment.com"
                 required
               />
             </div>
@@ -65,12 +66,11 @@ function LoginForm() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
                 required
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </CardContent>
@@ -79,314 +79,202 @@ function LoginForm() {
   )
 }
 
+interface DashboardStats {
+  totalInquiries: number
+  totalPackages: number
+  totalMedia: number
+  totalImages: number
+  totalVideos: number
+  pendingInquiries: number
+  confirmedBookings: number
+  monthlyInquiries: number
+}
+
 function AdminDashboard() {
   const { logout } = useAuth()
-  const [stats, setStats] = useState({
-    packages: 0,
-    media: 0,
-    inquiries: 0,
+  const [stats, setStats] = useState<DashboardStats>({
+    totalInquiries: 0,
+    totalPackages: 0,
+    totalMedia: 0,
+    totalImages: 0,
+    totalVideos: 0,
+    pendingInquiries: 0,
+    confirmedBookings: 0,
+    monthlyInquiries: 0,
   })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch dashboard stats
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("/api/admin/stats")
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
-        }
-      } catch (error) {
-        console.error("Error fetching stats:", error)
-      }
-    }
-
-    fetchStats()
+    fetchDashboardStats()
   }, [])
 
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch('/api/admin/stats')
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const statsCards = [
+    {
+      title: "Total Inquiries",
+      value: stats.totalInquiries,
+      description: "Total customer inquiries",
+      icon: MessageSquare,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50"
+    },
+    {
+      title: "Active Packages",
+      value: stats.totalPackages,
+      description: "Available service packages",
+      icon: Package,
+      color: "text-green-600",
+      bgColor: "bg-green-50"
+    },
+    {
+      title: "Media Files",
+      value: stats.totalMedia,
+      description: `${stats.totalImages} images, ${stats.totalVideos} videos`,
+      icon: Image,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50"
+    },
+    {
+      title: "Pending Inquiries",
+      value: stats.pendingInquiries,
+      description: "Awaiting response",
+      icon: Calendar,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50"
+    },
+    {
+      title: "Confirmed Bookings",
+      value: stats.confirmedBookings,
+      description: "This month",
+      icon: Star,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50"
+    },
+    {
+      title: "Monthly Growth",
+      value: `+${stats.monthlyInquiries}`,
+      description: "New inquiries this month",
+      icon: TrendingUp,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50"
+    }
+  ]
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <Button variant="outline" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+    <div className="container mx-auto p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your entertainment services and customer inquiries
+          </p>
         </div>
+        <Button variant="outline" onClick={logout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-primary" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Packages</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.packages}</p>
+      {/* Dashboard Stats */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {statsCards.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <Icon className={`h-4 w-4 ${stat.color}`} />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <ImageIcon className="h-8 w-8 text-primary" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Media Items</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.media}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <MessageSquare className="h-8 w-8 text-primary" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Inquiries</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.inquiries}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Management Tabs */}
-        <Tabs defaultValue="packages" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="media">Media</TabsTrigger>
-            <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="packages">
-            <PackageManagement />
-          </TabsContent>
-
-          <TabsContent value="media">
-            <MediaManagement />
-          </TabsContent>
-
-          <TabsContent value="inquiries">
-            <InquiryManagement />
-          </TabsContent>
-        </Tabs>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
+
+      {/* Management Tabs */}
+      <Tabs defaultValue="inquiries" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="inquiries" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Inquiries
+            {stats.pendingInquiries > 0 && (
+              <Badge variant="destructive" className="ml-1 text-xs">
+                {stats.pendingInquiries}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="packages" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Packages
+          </TabsTrigger>
+          <TabsTrigger value="media" className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Media
+          </TabsTrigger>
+          <TabsTrigger value="backgrounds" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Backgrounds
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inquiries">
+          <InquiryManagement />
+        </TabsContent>
+
+        <TabsContent value="packages">
+          <PackageManagement />
+        </TabsContent>
+
+        <TabsContent value="media">
+          <MediaManagement />
+        </TabsContent>
+
+        <TabsContent value="backgrounds">
+          <BackgroundManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
 
-function PackageManagement() {
-  const [packages, setPackages] = useState([])
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    fetchPackages()
-  }, [])
-
-  const fetchPackages = async () => {
-    try {
-      const response = await fetch("/api/packages")
-      if (response.ok) {
-        const data = await response.json()
-        setPackages(data)
-      }
-    } catch (error) {
-      console.error("Error fetching packages:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deletePackage = async (id: string) => {
-    try {
-      const response = await fetch(`/api/packages/${id}`, {
-        method: "DELETE",
-      })
-      if (response.ok) {
-        setPackages(packages.filter((pkg: any) => pkg.id !== id))
-        toast({
-          title: "Package deleted",
-          description: "Package has been successfully deleted.",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete package.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (loading) {
-    return <div>Loading packages...</div>
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Package Management</CardTitle>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Package
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {packages.map((pkg: any) => (
-            <div key={pkg.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-semibold">{pkg.title}</h3>
-                <p className="text-sm text-gray-600">{pkg.description}</p>
-                <p className="text-lg font-bold text-primary">₹{pkg.price?.toLocaleString()}</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => deletePackage(pkg.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function MediaManagement() {
-  const [media, setMedia] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchMedia()
-  }, [])
-
-  const fetchMedia = async () => {
-    try {
-      const response = await fetch("/api/media")
-      if (response.ok) {
-        const data = await response.json()
-        setMedia(data)
-      }
-    } catch (error) {
-      console.error("Error fetching media:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return <div>Loading media...</div>
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Media Management</CardTitle>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Upload Media
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {media.map((item: any) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden">
-              <img src={item.url || "/placeholder.svg"} alt={item.title} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h3 className="font-semibold">{item.title}</h3>
-                <Badge variant="secondary">{item.category}</Badge>
-                <div className="flex justify-end space-x-2 mt-2">
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function InquiryManagement() {
-  const [inquiries, setInquiries] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchInquiries()
-  }, [])
-
-  const fetchInquiries = async () => {
-    try {
-      const response = await fetch("/api/contact")
-      if (response.ok) {
-        const data = await response.json()
-        setInquiries(data)
-      }
-    } catch (error) {
-      console.error("Error fetching inquiries:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return <div>Loading inquiries...</div>
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Contact Inquiries</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {inquiries.map((inquiry: any) => (
-            <div key={inquiry.id} className="p-4 border rounded-lg">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold">{inquiry.name}</h3>
-                <Badge variant="outline">{inquiry.eventType || "General"}</Badge>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">
-                {inquiry.email} • {inquiry.phone}
-              </p>
-              {inquiry.eventDate && <p className="text-sm text-gray-600 mb-2">Event Date: {inquiry.eventDate}</p>}
-              <p className="text-sm">{inquiry.message}</p>
-              <p className="text-xs text-gray-500 mt-2">Received: {new Date(inquiry.createdAt).toLocaleDateString()}</p>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function AdminPage() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated } = useAuth()
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (!isAuthenticated) {
+    return <LoginForm />
   }
 
-  return isAuthenticated ? <AdminDashboard /> : <LoginForm />
+  return <AdminDashboard />
 }

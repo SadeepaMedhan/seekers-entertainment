@@ -1,112 +1,80 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Check, Star } from "lucide-react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Check, Star, Clock, Users, Music, Camera, Mic } from 'lucide-react'
+import Link from 'next/link'
 
 interface Package {
-  id: string
-  title: string
-  description: string
+  _id: string
+  name: string
   price: number
+  description: string
   features: string[]
-  popular?: boolean
-  image: string
+  category: string
+  popular: boolean
+  duration?: string
+  capacity?: string
+  equipment?: string[]
+  createdAt: string
+}
+
+const categoryIcons = {
+  wedding: { icon: Star, color: 'text-pink-600', bg: 'bg-pink-50' },
+  corporate: { icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+  party: { icon: Music, color: 'text-purple-600', bg: 'bg-purple-50' },
+  concert: { icon: Mic, color: 'text-red-600', bg: 'bg-red-50' },
+  festival: { icon: Camera, color: 'text-green-600', bg: 'bg-green-50' },
+  default: { icon: Star, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 
 export function PackagesSection() {
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   useEffect(() => {
-    // Fetch packages from API
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch("/api/packages")
-        if (response.ok) {
-          const data = await response.json()
-          setPackages(data)
-        } else {
-          // Fallback to default packages
-          setPackages(defaultPackages)
-        }
-      } catch (error) {
-        console.error("Error fetching packages:", error)
-        setPackages(defaultPackages)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchPackages()
   }, [])
 
-  const defaultPackages: Package[] = [
-    {
-      id: "1",
-      title: "Basic Package",
-      description: "Perfect for small gatherings and intimate celebrations",
-      price: 15000,
-      features: [
-        "Professional DJ for 4 hours",
-        "Basic sound system",
-        "LED uplighting",
-        "Wireless microphone",
-        "Music requests handling",
-      ],
-      image: "/placeholder.svg?height=300&width=400",
-    },
-    {
-      id: "2",
-      title: "Premium Package",
-      description: "Ideal for weddings and corporate events",
-      price: 35000,
-      features: [
-        "Professional DJ for 6 hours",
-        "Premium sound system",
-        "Advanced lighting setup",
-        "2 wireless microphones",
-        "LED screen display",
-        "Photography (2 hours)",
-        "Custom playlist creation",
-      ],
-      popular: true,
-      image: "/placeholder.svg?height=300&width=400",
-    },
-    {
-      id: "3",
-      title: "Luxury Package",
-      description: "Complete event solution for grand celebrations",
-      price: 75000,
-      features: [
-        "Professional DJ for 8 hours",
-        "Premium sound & lighting",
-        "LED screens & displays",
-        "Live streaming setup",
-        "Photography & videography",
-        "Event decoration",
-        "Drone coverage",
-        "Same-day video editing",
-      ],
-      image: "/placeholder.svg?height=300&width=400",
-    },
-  ]
+  const fetchPackages = async () => {
+    try {
+      const response = await fetch('/api/packages')
+      if (response.ok) {
+        const data = await response.json()
+        setPackages(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch packages:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredPackages = selectedCategory === 'all' 
+    ? packages 
+    : packages.filter(pkg => pkg.category === selectedCategory)
+
+  const categories = ['all', ...new Set(packages.map(pkg => pkg.category))]
+
+  const getCategoryIcon = (category: string) => {
+    return categoryIcons[category as keyof typeof categoryIcons] || categoryIcons.default
+  }
 
   if (loading) {
     return (
-      <section id="packages" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="packages" className="py-20 bg-white">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <div className="h-12 bg-gray-200 rounded w-64 mx-auto mb-4 animate-pulse" />
-            <div className="h-6 bg-gray-200 rounded w-96 mx-auto animate-pulse" />
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Packages</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Choose from our comprehensive entertainment packages designed for every occasion
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-gray-200 rounded-lg h-96 animate-pulse" />
-            ))}
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
           </div>
         </div>
       </section>
@@ -114,65 +82,182 @@ export function PackagesSection() {
   }
 
   return (
-    <section id="packages" className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Event Packages</h2>
+    <section id="packages" className="py-20 bg-white">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Packages</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose from our carefully crafted packages or let us create a custom solution for your unique event needs.
+            Choose from our comprehensive entertainment packages designed for every occasion
           </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {packages.map((pkg, index) => (
-            <motion.div
-              key={pkg.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className={`h-full relative ${pkg.popular ? "ring-2 ring-primary" : ""}`}>
-                {pkg.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                    <Star className="w-3 h-3 mr-1" />
-                    Most Popular
-                  </Badge>
-                )}
-
-                <CardHeader>
-                  <div className="aspect-video rounded-lg overflow-hidden mb-4">
-                    <img src={pkg.image || "/placeholder.svg"} alt={pkg.title} className="w-full h-full object-cover" />
-                  </div>
-                  <CardTitle className="text-2xl">{pkg.title}</CardTitle>
-                  <CardDescription>{pkg.description}</CardDescription>
-                  <div className="text-3xl font-bold text-primary">₹{pkg.price.toLocaleString()}</div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <ul className="space-y-3">
-                    {pkg.features.map((feature) => (
-                      <li key={feature} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
-                    Book This Package
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
         </div>
+
+        {/* Category Filter */}
+        {categories.length > 1 && (
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className="px-4 py-2 capitalize"
+                size="sm"
+              >
+                {category === 'all' ? 'All Packages' : category}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Packages Grid */}
+        {filteredPackages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPackages.map((pkg) => {
+              const categoryInfo = getCategoryIcon(pkg.category)
+              const IconComponent = categoryInfo.icon
+              
+              return (
+                <Card 
+                  key={pkg._id} 
+                  className={`relative h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                    pkg.popular ? 'ring-2 ring-primary ring-offset-2' : ''
+                  }`}
+                >
+                  {pkg.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary text-white px-3 py-1">
+                        <Star className="h-3 w-3 mr-1" />
+                        Most Popular
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  <CardHeader className="text-center pb-4">
+                    <div className={`inline-flex p-3 rounded-full ${categoryInfo.bg} mx-auto mb-4`}>
+                      <IconComponent className={`h-6 w-6 ${categoryInfo.color}`} />
+                    </div>
+                    
+                    <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
+                    <CardDescription className="text-base mt-2">
+                      {pkg.description}
+                    </CardDescription>
+                    
+                    <div className="mt-4">
+                      <span className="text-4xl font-bold text-primary">
+                        ${pkg.price.toLocaleString()}
+                      </span>
+                      <span className="text-gray-600 ml-2">per event</span>
+                    </div>
+                    
+                    <Badge 
+                      variant="secondary" 
+                      className="mt-3 capitalize"
+                    >
+                      {pkg.category}
+                    </Badge>
+                  </CardHeader>
+                  
+                  <CardContent className="flex-grow">
+                    <div className="space-y-4">
+                      {/* Features */}
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-3">Features Included:</h4>
+                        <ul className="space-y-2">
+                          {pkg.features.map((feature, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      {/* Additional Info */}
+                      {(pkg.duration || pkg.capacity || pkg.equipment) && (
+                        <div className="pt-4 border-t border-gray-100">
+                          <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
+                            {pkg.duration && (
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                <span>Duration: {pkg.duration}</span>
+                              </div>
+                            )}
+                            {pkg.capacity && (
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                <span>Capacity: {pkg.capacity}</span>
+                              </div>
+                            )}
+                            {pkg.equipment && pkg.equipment.length > 0 && (
+                              <div className="flex items-start gap-2">
+                                <Camera className="h-4 w-4 mt-0.5" />
+                                <span>Equipment: {pkg.equipment.join(', ')}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter className="pt-6">
+                    <Link href="#contact" className="w-full">
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        variant={pkg.popular ? "default" : "outline"}
+                      >
+                        Get Quote
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="inline-flex p-4 rounded-full bg-gray-50 mb-4">
+              <Star className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-lg mb-2">
+              {packages.length === 0 
+                ? 'No packages available yet' 
+                : `No ${selectedCategory} packages found`
+              }
+            </p>
+            <p className="text-gray-400 text-sm mb-6">
+              {packages.length === 0 
+                ? 'Check back soon for our service packages!' 
+                : 'Try selecting a different category or contact us for custom packages'
+              }
+            </p>
+            <Link href="#contact">
+              <Button>
+                Contact Us for Custom Packages
+              </Button>
+            </Link>
+          </div>
+        )}
+        
+        {/* Call to Action */}
+        {filteredPackages.length > 0 && (
+          <div className="text-center mt-16">
+            <div className="bg-gray-50 rounded-2xl px-8 py-12">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Need a Custom Package?
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                Can't find exactly what you're looking for? We create custom entertainment 
+                packages tailored to your specific event needs and budget.
+              </p>
+              <Link href="#contact">
+                <Button size="lg" className="px-8">
+                  Get Custom Quote
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )

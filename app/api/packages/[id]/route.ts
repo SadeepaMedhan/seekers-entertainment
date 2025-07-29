@@ -1,82 +1,83 @@
 import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/mongodb"
+import Package from "@/models/Package"
 
-// Mock data - replace with actual database
-const packages = [
-  {
-    id: "1",
-    title: "Basic Package",
-    description: "Perfect for small gatherings and intimate celebrations",
-    price: 15000,
-    features: [
-      "Professional DJ for 4 hours",
-      "Basic sound system",
-      "LED uplighting",
-      "Wireless microphone",
-      "Music requests handling",
-    ],
-    image: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: "2",
-    title: "Premium Package",
-    description: "Ideal for weddings and corporate events",
-    price: 35000,
-    features: [
-      "Professional DJ for 6 hours",
-      "Premium sound system",
-      "Advanced lighting setup",
-      "2 wireless microphones",
-      "LED screen display",
-      "Photography (2 hours)",
-      "Custom playlist creation",
-    ],
-    popular: true,
-    image: "/placeholder.svg?height=300&width=400",
-  },
-  {
-    id: "3",
-    title: "Luxury Package",
-    description: "Complete event solution for grand celebrations",
-    price: 75000,
-    features: [
-      "Professional DJ for 8 hours",
-      "Premium sound & lighting",
-      "LED screens & displays",
-      "Live streaming setup",
-      "Photography & videography",
-      "Event decoration",
-      "Drone coverage",
-      "Same-day video editing",
-    ],
-    image: "/placeholder.svg?height=300&width=400",
-  },
-]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB()
+    
+    const { id } = params
+    const packageItem = await Package.findById(id).lean()
+    
+    if (!packageItem) {
+      return NextResponse.json({ error: "Package not found" }, { status: 404 })
+    }
+    
+    // Format response
+    const formattedPackage = {
+      ...(packageItem as any),
+      id: (packageItem as any)._id.toString(),
+      _id: undefined
+    }
+    
+    return NextResponse.json(formattedPackage)
+  } catch (error) {
+    console.error("Error fetching package:", error)
+    return NextResponse.json({ error: "Failed to fetch package" }, { status: 500 })
+  }
+}
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params
-  const index = packages.findIndex((pkg) => pkg.id === id)
+  try {
+    await connectDB()
+    
+    const { id } = params
+    const deletedPackage = await Package.findByIdAndDelete(id)
 
-  if (index === -1) {
-    return NextResponse.json({ error: "Package not found" }, { status: 404 })
+    if (!deletedPackage) {
+      return NextResponse.json({ error: "Package not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ message: "Package deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting package:", error)
+    return NextResponse.json({ error: "Failed to delete package" }, { status: 500 })
   }
-
-  packages.splice(index, 1)
-  return NextResponse.json({ message: "Package deleted successfully" })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    await connectDB()
+    
     const { id } = params
     const body = await request.json()
-    const index = packages.findIndex((pkg) => pkg.id === id)
+    
+    const updatedPackage = await Package.findByIdAndUpdate(
+      id,
+      {
+        ...body,
+        updatedAt: new Date()
+      },
+      { new: true, runValidators: true }
+    )
 
-    if (index === -1) {
+    if (!updatedPackage) {
       return NextResponse.json({ error: "Package not found" }, { status: 404 })
     }
 
-    packages[index] = { ...packages[index], ...body }
-    return NextResponse.json(packages[index])
+    // Format response
+    const formattedPackage = {
+      ...updatedPackage.toObject(),
+      id: updatedPackage._id.toString(),
+      _id: undefined
+    }
+
+    return NextResponse.json(formattedPackage)
   } catch (error) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 })
+    console.error("Error updating package:", error)
+    return NextResponse.json({ error: "Failed to update package" }, { status: 500 })
   }
 }

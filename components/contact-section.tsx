@@ -143,7 +143,7 @@ export function ContactSection() {
                         required
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+91 98765 43210"
+                        placeholder="+94 71 035 8723"
                       />
                     </div>
                     <div>
@@ -211,8 +211,8 @@ export function ContactSection() {
                   <Phone className="h-6 w-6 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                    <p className="text-gray-600">+91 98765 43210</p>
-                    <p className="text-gray-600">+91 87654 32109</p>
+                    <p className="text-gray-600">071 035 8723</p>
+                    <p className="text-gray-600">076 46 80000</p>
                   </div>
                 </div>
               </CardContent>
@@ -224,6 +224,7 @@ export function ContactSection() {
                   <Mail className="h-6 w-6 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                    <p className="text-gray-600">sasindu77@gmail.com</p>
                     <p className="text-gray-600">info@seekersentertainment.com</p>
                     <p className="text-gray-600">bookings@seekersentertainment.com</p>
                   </div>
@@ -238,11 +239,11 @@ export function ContactSection() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                     <p className="text-gray-600">
-                      123 Entertainment Street,
-                      <br />
+                      Matara, Sri Lanka
+                      {/* <br />
                       Music District, Mumbai - 400001
                       <br />
-                      Maharashtra, India
+                      Maharashtra, India */}
                     </p>
                   </div>
                 </div>

@@ -17,16 +17,16 @@ export function Footer() {
               customer care.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.facebook.com/SeekersEntertainment" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.instagram.com/SeekersEntertainment" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://twitter.com/SeekersEntertainment" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.youtube.com/@seekersentertainment9276" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Youtube className="h-5 w-5" />
               </a>
             </div>
@@ -100,18 +100,18 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-primary" />
-                <span className="text-gray-400">+91 98765 43210</span>
+                <span className="text-gray-400">+94 71 035 8723</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-primary" />
-                <span className="text-gray-400">info@seekersentertainment.com</span>
+                <span className="text-gray-400">sasindu77@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-primary mt-1" />
                 <span className="text-gray-400">
-                  123 Entertainment Street,
-                  <br />
-                  Mumbai - 400001, India
+                  Matara, Sri Lanka
+                  {/* <br />
+                  Mumbai - 400001, India */}
                 </span>
               </div>
             </div>
