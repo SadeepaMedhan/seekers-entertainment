@@ -1,14 +1,32 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next@^14.2.16"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "functions": {
-    "app/api/**/*.ts": {
+    "app/api/seed/route.ts": {
       "maxDuration": 30
+    },
+    "app/api/**/*.ts": {
+      "maxDuration": 15
     }
   },
-  "regions": ["fra1"],
-  "buildCommand": "npm run build",
-  "framework": "nextjs",
-  "installCommand": "npm install",
   "env": {
-    "NODE_ENV": "production"
+    "MONGODB_URI": "@mongodb_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "NEXT_PUBLIC_APP_URL": "@next_public_app_url"
   }
 }
